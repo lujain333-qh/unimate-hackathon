@@ -1,6 +1,11 @@
 import streamlit as st
 import calendar
 
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+
 st.set_page_config(page_title='UniMate | AI Campus Companion', page_icon='🎓', layout='wide')
 
 # -------------------- DATA --------------------
@@ -33,7 +38,10 @@ st.markdown('''<style>
 html,body,[class*="css"]{font-family:Inter,sans-serif}.stApp{background:var(--bg);color:var(--text)}#MainMenu,footer{visibility:hidden}.block-container{padding:1.5rem 2.2rem 2.5rem;max-width:1500px}
 section[data-testid="stSidebar"]{background:linear-gradient(180deg,#071A3D,#0A2450)}section[data-testid="stSidebar"]>div{padding:.9rem .8rem}section[data-testid="stSidebar"] *{color:#EAF1FF}
 .logo{font-size:26px;font-weight:800;padding:8px 10px 18px}.logo span{color:#72A1FF}.profile{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1);padding:13px;border-radius:16px;margin-bottom:16px}.avatar{width:42px;height:42px;border-radius:50%;background:#DCE9FF;color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:800;float:left;margin-right:10px}.profile small{color:#AFC1E5}.navlabel{color:#8FA7D0;font-size:10px;text-transform:uppercase;letter-spacing:1.2px;margin:12px 9px 7px}
-div.stButton>button{border-radius:11px;border:1px solid var(--line);font-weight:600;background:white;color:var(--text);min-height:40px}.hero{background:linear-gradient(135deg,#071A3D,#123D83 60%,#2F6FED);color:white;border-radius:24px;padding:27px 30px;margin-bottom:18px;box-shadow:0 14px 35px rgba(7,26,61,.13)}.hero h1{font-size:30px;margin:0 0 7px;font-weight:800}.hero p{margin:0;color:#D9E6FF;font-size:13px}.badge{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:6px 11px;font-size:10px;margin-bottom:13px}
+div.stButton>button{border-radius:11px;border:1px solid var(--line);font-weight:600;background:white;color:var(--text);min-height:40px}
+section[data-testid="stSidebar"] div.stButton>button{background:#FFFFFF !important;color:#071A3D !important;text-align:left;padding-left:15px}
+section[data-testid="stSidebar"] div.stButton>button p{color:#071A3D !important}
+section[data-testid="stSidebar"] div.stButton>button:hover{background:#EAF2FF !important;color:#2F6FED !important;border-color:#2F6FED}.hero{background:linear-gradient(135deg,#071A3D,#123D83 60%,#2F6FED);color:white;border-radius:24px;padding:27px 30px;margin-bottom:18px;box-shadow:0 14px 35px rgba(7,26,61,.13)}.hero h1{font-size:30px;margin:0 0 7px;font-weight:800}.hero p{margin:0;color:#D9E6FF;font-size:13px}.badge{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:6px 11px;font-size:10px;margin-bottom:13px}
 .metric,.card{background:white;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 5px 18px rgba(20,40,80,.04)}.metric{min-height:120px}.icon{font-size:19px;background:var(--pale);border-radius:11px;padding:8px;display:inline-block}.label{font-size:11px;color:var(--muted);margin-top:11px}.value{font-size:24px;font-weight:800;color:var(--navy)}.muted{color:var(--muted);font-size:11px}.section-title{font-size:19px;font-weight:800;margin:23px 0 11px}.section-sub{color:var(--muted);font-size:11px;margin-top:-7px;margin-bottom:11px}.card h3{font-size:15px;margin:0 0 6px;color:var(--navy)}.code{color:var(--blue);font-weight:800;font-size:11px}.course{font-weight:700;font-size:14px;margin:3px 0 8px}.tag{display:inline-block;background:var(--pale);color:#255CC3;border-radius:20px;padding:5px 9px;font-size:9px;font-weight:700;margin:2px 3px 2px 0}.green{color:var(--green);font-weight:700}.event{border-left:4px solid var(--blue);background:#F3F7FF;padding:11px 13px;border-radius:10px;margin-bottom:8px}.event small{display:block;color:var(--muted);margin-top:3px}.progress-bg{height:8px;background:#E9EEF6;border-radius:99px;overflow:hidden;margin:8px 0 5px}.progress{height:100%;background:linear-gradient(90deg,#2F6FED,#6A98F5);border-radius:99px}.donut{width:145px;height:145px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:conic-gradient(#2F6FED 0 26.2%,#E7ECF5 26.2% 100%);margin:12px auto}.donutin{width:108px;height:108px;border-radius:50%;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center}.donutin b{font-size:23px;color:var(--navy)}.donutin span{font-size:9px;color:var(--muted)}.prof{display:flex;gap:11px;align-items:flex-start}.profav{width:42px;height:42px;border-radius:13px;background:#E6EEFF;color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:800}.ai{background:linear-gradient(135deg,#EDF4FF,#F8FAFF);border:1px solid #D6E4FF;border-radius:18px;padding:17px}.day{background:white;border:1px solid var(--line);border-radius:13px;padding:10px;min-height:110px}.day h4{margin:0;color:var(--navy);font-size:12px}.slot{background:#EEF4FF;border-left:3px solid #2F6FED;border-radius:7px;padding:6px;margin-top:7px}.slot b{font-size:10px}.slot small{display:block;color:#6D7890;font-size:9px}.priority{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #EDF0F5}.priority:last-child{border-bottom:0}.picon{width:30px;height:30px;border-radius:9px;background:#EAF2FF;display:flex;align-items:center;justify-content:center}
 </style>''',unsafe_allow_html=True)
 
@@ -58,6 +66,165 @@ def prof_card(p):
     name,dept,office,email,hours,cs,fav=p
     initials=''.join(x[0] for x in name.split()[:2])
     st.markdown(f'<div class="card"><div class="prof"><div class="profav">{initials}</div><div><h3>{name}</h3><div class="muted">{dept}</div></div></div><div style="margin-top:10px"><span class="tag">{"★ Bookmarked" if fav else "Faculty"}</span></div><div class="muted" style="margin-top:9px">📍 {office}</div><div class="muted" style="margin-top:5px">✉️ {email}</div><div class="muted" style="margin-top:5px">🕒 {hours}</div><div style="margin-top:8px"><b style="font-size:10px">Courses</b><br><span class="muted">{cs}</span></div></div>',unsafe_allow_html=True)
+
+# -------------------- AI CONTEXT + CHAT --------------------
+def build_student_context():
+    course_lines = []
+    for code, c in COURSES.items():
+        course_lines.append(
+            f"{code} — {c['name']} | {c['time']} | {c['room']} | Instructor: {c['prof']} | Absence: {c['absence']} ({c['pct']}%) | Assessment: {c['assess']} | Record: {c['result']}"
+        )
+    schedule_lines = []
+    for day, items in PLANNER.items():
+        if items:
+            schedule_lines.append(day + ': ' + '; '.join(f'{tm} {code}' for tm, code, _ in items))
+        else:
+            schedule_lines.append(day + ': No classes')
+    return """Student: Lana Alghamdi
+Major: Bachelor of Science in Computer Network Engineering
+Degree progress: 37 / 141 credits (26.2%)
+Current load: 5 courses / 14 credit hours
+Active club: Data Science Club
+DN threshold: 20% absence rate
+
+COURSES:
+""" + "\n".join(course_lines) + "\n\nWEEKLY SCHEDULE:\n" + "\n".join(schedule_lines) + """
+
+UPCOMING EVENTS:
+- Tue Sep 29, 2026, 09:30–15:00: Industrial Field Trip to Sadara Chemical Company. Conflicts with SLM 101; departmental excuse policy applies.
+- Wed Sep 30, 2026: Scheduled Course Quiz.
+
+ROLE: You are UniMate, a friendly academic planning assistant. Use only the supplied student context for factual claims about Lana's schedule. Help her compare days, spot schedule conflicts, organize study time, and discuss course workload. Do not invent deadlines, grades, textbooks, or university policies. If information is missing, say so. Keep answers practical and concise.
+"""
+
+
+def get_openai_client():
+    """Return an OpenAI client when a Streamlit secret is configured."""
+    if OpenAI is None:
+        return None
+    try:
+        api_key = st.secrets.get("OPENAI_API_KEY")
+    except Exception:
+        api_key = None
+    if not api_key:
+        return None
+    try:
+        return OpenAI(api_key=api_key)
+    except Exception:
+        return None
+
+
+def ask_unimate_ai(user_message):
+    """Ask the AI using the student's UniMate context.
+
+    Returns None if the API is not configured or an API error occurs,
+    so the app can always fall back to deterministic schedule answers.
+    """
+    client = get_openai_client()
+    if client is None:
+        return None
+
+    history = st.session_state.get("ai_messages", [])[-8:]
+    conversation = [{"role": "developer", "content": build_student_context()}]
+    conversation.extend(history)
+    conversation.append({"role": "user", "content": user_message})
+
+    try:
+        response = client.responses.create(
+            model="gpt-5.6-luna",
+            input=conversation,
+        )
+        text = getattr(response, "output_text", None)
+        return text.strip() if text else None
+    except Exception:
+        return None
+
+
+def schedule_text():
+    return (
+        "**Lana's Weekly Schedule**\n\n"
+        "**Sunday**\n"
+        "• 09:30–11:00 — CNE 100 — Data Comm & Networks — B-21\n"
+        "• 11:00–12:20 — CIS 202 — Data Structures — A-21\n"
+        "• 13:20–14:40 — MTH 104 — Calculus I — D-11\n\n"
+        "**Monday**\n"
+        "• 09:30–10:50 — AIE 101 — AI Essentials — D-23\n\n"
+        "**Tuesday**\n"
+        "• 11:00–12:50 — SLM 101 — Foundation of Islamic Culture — COED-11\n\n"
+        "**Wednesday**\n"
+        "• 09:30–11:00 — CNE 100 — Data Comm & Networks — B-21\n"
+        "• 11:00–12:20 — CIS 202 — Data Structures — A-21\n"
+        "• 13:20–14:40 — MTH 104 — Calculus I — D-11\n\n"
+        "**Thursday**\n"
+        "• 09:30–10:50 — AIE 101 — AI Essentials — D-23\n"
+        "• 14:40–16:30 — SLM 101 — Foundation of Islamic Culture — COED-11\n\n"
+        "**Friday:** No classes in the supplied schedule.\n\n"
+        "**Saturday:** No classes in the supplied schedule."
+    )
+
+
+def prototype_answer(question):
+    """Deterministic answers keep the prototype useful without an API key."""
+    q = question.strip().lower()
+
+    if any(x in q for x in ["send my schedule", "show my schedule", "my schedule", "جدولي", "الجدول"]):
+        return schedule_text()
+
+    day_answers = {
+        "sunday": "**Sunday:** CNE 100 09:30–11:00, CIS 202 11:00–12:20, and MTH 104 13:20–14:40.",
+        "الأحد": "**الأحد:** CNE 100 من 09:30–11:00، CIS 202 من 11:00–12:20، وMTH 104 من 13:20–14:40.",
+        "monday": "**Monday:** AIE 101 from 09:30–10:50.",
+        "الاثنين": "**الاثنين:** AIE 101 من 09:30–10:50.",
+        "tuesday": "**Tuesday:** SLM 101 from 11:00–12:50. The Sep 29 Sadara field trip is 09:30–15:00 and conflicts with SLM 101.",
+        "الثلاثاء": "**الثلاثاء:** SLM 101 من 11:00–12:50. ورحلة Sadara يوم 29 سبتمبر من 09:30–15:00 وتتعارض مع SLM 101.",
+        "wednesday": "**Wednesday:** CNE 100 09:30–11:00, CIS 202 11:00–12:20, and MTH 104 13:20–14:40.",
+        "الأربعاء": "**الأربعاء:** CNE 100 من 09:30–11:00، CIS 202 من 11:00–12:20، وMTH 104 من 13:20–14:40.",
+        "thursday": "**Thursday:** AIE 101 from 09:30–10:50 and SLM 101 from 14:40–16:30.",
+        "الخميس": "**الخميس:** AIE 101 من 09:30–10:50 وSLM 101 من 14:40–16:30.",
+        "friday": "**Friday:** No classes in the supplied schedule.",
+        "الجمعة": "**الجمعة:** ما عندك محاضرات في الجدول الحالي.",
+        "saturday": "**Saturday:** No classes in the supplied schedule.",
+        "السبت": "**السبت:** ما عندك محاضرات في الجدول الحالي.",
+    }
+    for key, answer in day_answers.items():
+        if key in q:
+            return answer
+
+    if any(x in q for x in ["conflict", "overlap", "clash", "تعارض"]):
+        return ("في الجدول الأسبوعي نفسه ما فيه محاضرتين في نفس الوقت. لكن عندك **تعارض مهم يوم 29 سبتمبر**: رحلة Sadara من 09:30–15:00 تتعارض مع SLM 101، وتطبق سياسة الاعتذار التابعة للقسم حسب البيانات الموجودة.")
+
+    if any(x in q for x in ["study", "study plan", "مذاكر", "مذاكرة", "أذاكر", "ذاكر"]):
+        return ("بناءً على جدولك، أقدر أرتب لك خطة مذاكرة. كبداية: خصصي جلسة قصيرة لـ **CNE 100** لمراجعة Network Layer وTransmission Media، ثم استخدمي Practice Prep. وإذا قلتي لي اليوم أو المادة، أرتبها حول محاضراتك.")
+
+    if "cne 100" in q and any(x in q for x in ["teach", "prof", "instructor", "دكتور", "يدرس"]):
+        return "CNE 100 يدرّسه **Dr. Hussein Al Bazar**، Section 1، Room B-21، يومي الأحد والأربعاء 09:30–11:00."
+
+    if any(x in q for x in ["dn", "absence", "غياب"]):
+        return "حد الـDN في البيانات الحالية هو **20%**. CNE 100 وCIS 202 وMTH 104 عند 3.33%، بينما AIE 101 وSLM 101 عند 0%."
+
+    if any(x in q for x in ["sadara", "trip", "رحلة"]):
+        return "رحلة Sadara يوم **الثلاثاء 29 سبتمبر 2026 من 09:30 إلى 15:00**، وتتعارض مع SLM 101 حسب البيانات الموجودة."
+
+    if any(x in q for x in ["quiz", "كويز"]):
+        return "المسجل حاليًا: **CNE 100 Quiz 1 = 4.50/7.00 (64.3%)**، ويوجد أيضًا Scheduled Course Quiz بتاريخ 30 سبتمبر."
+
+    if "cne 100" in q:
+        return "CNE 100 هو Data Comm & Networks، يومي الأحد والأربعاء 09:30–11:00 في B-21 مع Dr. Hussein Al Bazar. Quiz 1 المسجل هو 4.50/7.00 (64.3%)."
+
+    if "cis 202" in q:
+        return "CIS 202 هو Data Structures، يومي الأحد والأربعاء 11:00–12:20 في A-21 مع Mrs. Lubna Tahlawi."
+
+    if "mth 104" in q or "calculus" in q:
+        return "MTH 104 هو Calculus I، يومي الأحد والأربعاء 13:20–14:40 في D-11 مع Dr. Ahmad Mugbil."
+
+    if "aie 101" in q:
+        return "AIE 101 هو AI Essentials، يومي الاثنين والخميس 09:30–10:50 في D-23 مع Dr. Iman Hassan Ferjani."
+
+    if "slm 101" in q:
+        return "SLM 101 هو Foundation of Islamic Culture، الثلاثاء 11:00–12:50 والخميس 14:40–16:30 في COED-11 مع Mr. Alaa Saber Gaber Ali."
+
+    return ("أقدر أساعدك في **جدولك، المواد، الحضور، الكويزات، التعارضات، والـPlanner**. "
+            "جربي: «أرسل لي جدولي»، «هل عندي تعارض؟»، أو «كيف أرتب مذاكرة CNE 100؟»")
 
 page=st.session_state.page
 
@@ -171,17 +338,61 @@ elif page=='Calendar':
 
 # -------------------- AI ASSISTANT --------------------
 elif page=='AI Assistant':
-    hero('PROTOTYPE AI','UniMate AI Assistant 🤖','Course-aware guidance using the academic information loaded into this prototype.')
-    st.markdown('<div class="ai"><b>Prototype context</b><p class="muted">This demo uses the supplied UniMate dataset. A production version can connect course PDFs and professor uploads to a local RAG pipeline.</p></div>',unsafe_allow_html=True)
-    q=st.text_input('Ask UniMate',placeholder='Who teaches CNE 100? What is the DN threshold? When is my field trip?')
-    if q:
-        ql=q.lower()
-        if 'cne 100' in ql and any(x in ql for x in ['teach','prof','instructor']): ans='CNE 100 is taught by Dr. Hussein Al Bazar, Section 1, Room B-21.'
-        elif 'dn' in ql or 'absence' in ql: ans='The DN threshold is 20%. CNE 100, CIS 202 and MTH 104 are at 3.33%; AIE 101 and SLM 101 are at 0%.'
-        elif 'sadara' in ql or 'trip' in ql: ans='The Sadara Industrial Field Trip is Tuesday, September 29, 2026, 09:30–15:00. It conflicts with SLM 101.'
-        elif 'quiz' in ql: ans='The supplied record shows CNE 100 Quiz 1 at 4.50/7.00 (64.3%). September 30 is also listed as a scheduled course quiz.'
-        else: ans='I can help with the loaded course schedule, faculty directory, attendance, degree progress and upcoming dates.'
-        st.markdown(f'<div class="card" style="margin-top:14px"><h3>UniMate</h3><p>{ans}</p></div>',unsafe_allow_html=True)
+    hero('AI ACADEMIC COMPANION','UniMate AI Assistant 🤖','Talk to UniMate about your real university schedule, courses and study planning.')
+
+    st.markdown('''<div class="ai"><h3>🧠 Your AI knows your academic context</h3><p class="muted">Ask about your weekly schedule, course workload, conflicts, attendance, upcoming assessments, or how to organize study time around your classes.</p><span class="tag">Schedule-aware</span><span class="tag">Course-aware</span><span class="tag">Planner-aware</span></div>''',unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">Try asking</div>',unsafe_allow_html=True)
+    prompts=[
+        'وش عندي يوم الأحد؟',
+        'هل عندي تعارض في جدولي؟',
+        'كيف أرتب مذاكرة CNE 100 مع جدولي؟',
+        'وش المواد اللي عندي يوم الخميس؟'
+    ]
+    pcols=st.columns(4)
+    for col,prompt in zip(pcols,prompts):
+        with col:
+            if st.button(prompt,key='prompt_'+prompt,use_container_width=True):
+                st.session_state.ai_pending=prompt
+
+    if 'ai_messages' not in st.session_state:
+        st.session_state.ai_messages=[]
+    if 'ai_pending' not in st.session_state:
+        st.session_state.ai_pending=''
+
+    user_q=st.chat_input('اكتبي سؤالك عن جدولك أو موادك...')
+    if st.session_state.ai_pending:
+        user_q=st.session_state.ai_pending
+        st.session_state.ai_pending=''
+
+    for msg in st.session_state.ai_messages:
+        with st.chat_message(msg['role']):
+            st.markdown(msg['content'])
+
+    if user_q:
+        st.session_state.ai_messages.append({'role':'user','content':user_q})
+        with st.chat_message('user'):
+            st.markdown(user_q)
+
+        with st.chat_message('assistant'):
+            with st.spinner('UniMate is thinking...'):
+                try:
+                    answer=ask_unimate_ai(user_q)
+                except Exception:
+                    answer=None
+                if not answer:
+                    answer=prototype_answer(user_q)
+            st.markdown(answer)
+        st.session_state.ai_messages.append({'role':'assistant','content':answer})
+
+    st.markdown('<div class="section-title">What UniMate can discuss with you</div>',unsafe_allow_html=True)
+    a,b,c=st.columns(3)
+    with a:
+        st.markdown('<div class="card"><h3>📚 Courses</h3><p class="muted">Compare your courses, instructors, rooms, assessment weights and current records.</p></div>',unsafe_allow_html=True)
+    with b:
+        st.markdown('<div class="card"><h3>🗓️ Schedule</h3><p class="muted">Ask about your days, back-to-back classes, free periods and schedule conflicts.</p></div>',unsafe_allow_html=True)
+    with c:
+        st.markdown('<div class="card"><h3>🎯 Study Planning</h3><p class="muted">Discuss how to fit revision around classes and upcoming assessments without inventing missing deadlines.</p></div>',unsafe_allow_html=True)
 
 # -------------------- PRACTICE --------------------
 elif page=='Practice Prep':
