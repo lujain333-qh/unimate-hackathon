@@ -1,5 +1,7 @@
+
 import streamlit as st
 import calendar
+import html
 
 try:
     from openai import OpenAI
@@ -234,53 +236,69 @@ page=st.session_state.page
 
 # -------------------- DASHBOARD --------------------
 if page=='Dashboard':
-    hero('AI CAMPUS COMPANION · FALL 2026/2027','Good afternoon, Lana 👋','Your academic command center — degree progress, classes, attendance, faculty and next steps in one place.')
-    a,b,c,d=st.columns(4)
-    with a: metric('🎓','Degree Progress','26.2%','37 of 141 credits completed')
-    with b: metric('📚','Completed Credits','37 / 141','Bachelor of Science')
-    with c: metric('🗂️','Current Load','5 courses','14 credit hours')
-    with d: metric('⭐','Club Membership','Active','Data Science Club')
-    st.markdown('<div class="section-title">Academic Snapshot</div>',unsafe_allow_html=True)
-    left,right=st.columns([1.3,.7])
-    with left:
-        st.markdown('<div class="card"><h3>Current Courses</h3><div class="section-sub">Fall 2026/2027 registration</div>',unsafe_allow_html=True)
-        for code,c in COURSES.items():
-            st.markdown(f'<div style="padding:9px 0;border-bottom:1px solid #E9EDF4"><span class="code">{code}</span><span class="muted" style="float:right">{c["time"]}</span><div class="course">{c["name"]}</div><span class="tag">{c["room"]}</span><span class="tag">{c["prof"]}</span></div>',unsafe_allow_html=True)
-        st.markdown('</div>',unsafe_allow_html=True)
-    with right:
-        st.markdown('<div class="card"><h3>Degree Progress</h3><div class="section-sub">Computer Network Engineering</div><div class="donut"><div class="donutin"><b>26.2%</b><span>completed</span></div></div><div style="text-align:center" class="muted">37 completed · 104 remaining</div></div>',unsafe_allow_html=True)
-    st.markdown('<div class="section-title">Attendance & DN Safety</div><div class="section-sub">DN threshold: 20% absence rate</div>',unsafe_allow_html=True)
-    cols=st.columns(5)
-    for col,(code,c) in zip(cols,COURSES.items()):
-        with col:
-            width=max(c['pct']/20*100,2)
-            st.markdown(f'<div class="card"><span class="code">{code}</span><h3 style="margin-top:5px">{c["absence"]} absence{"s" if c["absence"]!=1 else ""}</h3><div class="progress-bg"><div class="progress" style="width:{width}%"></div></div><span class="green">{c["pct"]:.2f}% · Safe</span></div>',unsafe_allow_html=True)
-    x,y=st.columns(2)
-    with x: st.markdown('<div class="ai"><h3>🤖 AI Insight · CNE 100</h3><p style="font-size:12px">Quiz 1 is <b>4.50 / 7.00 (64.3%)</b>. Focus your next review on network-layer concepts and transmission media.</p><span class="tag">Network Layer</span><span class="tag">Transmission Media</span></div>',unsafe_allow_html=True)
-    with y: st.markdown('<div class="card"><h3>📅 Upcoming</h3><div class="event"><b>Sep 29 · Industrial Field Trip</b><small>09:30–15:00 · Sadara Chemical Company · Conflicts with SLM 101.</small></div><div class="event"><b>Sep 30 · Scheduled Course Quiz</b><small>Academic assessment.</small></div></div>',unsafe_allow_html=True)
+    hero('AI CAMPUS COMPANION · FALL 2026/2027','Good afternoon, Lana 👋','Your daily academic command center — what matters now, your next event, and instant help from UniMate.')
 
-    st.markdown('<div class="section-title">Quick UniMate</div><div class="section-sub">Get help with your schedule directly from the home page.</div>',unsafe_allow_html=True)
-    qa,qb=st.columns([1.55,1])
-    with qa:
-        st.markdown('<div class="ai"><h3>🤖 Ask UniMate about your schedule</h3><p style="font-size:12px">Ask about today\'s classes, conflicts, free periods, or where to place a study session.</p></div>',unsafe_allow_html=True)
-        quick=st.text_input('Quick question',key='dashboard_ai_input',placeholder='مثال: وش عندي يوم الأحد؟',label_visibility='collapsed')
-        qc1,qc2,qc3=st.columns(3)
-        with qc1:
-            if st.button('📅 My schedule',key='dash_schedule',use_container_width=True):
-                st.session_state.ai_prefill='أرسل لي جدولي الأسبوعي'; st.session_state.page='AI Assistant'; st.rerun()
-        with qc2:
-            if st.button('⚠️ Conflicts',key='dash_conflicts',use_container_width=True):
-                st.session_state.ai_prefill='هل عندي تعارض في جدولي؟'; st.session_state.page='AI Assistant'; st.rerun()
-        with qc3:
-            if st.button('🧠 Study time',key='dash_study',use_container_width=True):
-                st.session_state.ai_prefill='متى أفضل وقت أذاكر CNE 100؟'; st.session_state.page='AI Assistant'; st.rerun()
-        if st.button('🤖 Open AI Assistant',key='dash_open_ai',type='primary',use_container_width=True):
-            st.session_state.ai_prefill=quick.strip() if quick.strip() else ''
-            st.session_state.page='AI Assistant'
+    # Keep the dashboard focused: detailed student information lives in Student Workspace.
+    a,b,c,d=st.columns(4)
+    with a: metric('📚','Current Load','5 courses','14 credit hours')
+    with b: metric('⚠️','Attendance','3 safe warnings','All courses below DN threshold')
+    with c: metric('🚌','Next Event','Sep 29','Sadara field trip · 09:30–15:00')
+    with d: metric('📝','CNE 100 Quiz','64.3%','4.50 / 7.00 · review recommended')
+
+    st.markdown('<div class="section-title">What matters now</div>',unsafe_allow_html=True)
+    left,right=st.columns([1.15,.85])
+    with left:
+        st.markdown('<div class="card"><h3>📅 Upcoming</h3><div class="event"><b>Sep 29 · Industrial Field Trip</b><small>09:30–15:00 · Sadara Chemical Company · Conflicts with SLM 101. Departmental excuse policy applies.</small></div><div class="event"><b>Sep 30 · Scheduled Course Quiz</b><small>Keep your review time open before the assessment.</small></div></div>',unsafe_allow_html=True)
+    with right:
+        st.markdown('<div class="ai"><h3>🤖 AI Insight · CNE 100</h3><p style="font-size:12px">Your Quiz 1 result is <b>4.50 / 7.00 (64.3%)</b>. UniMate recommends reviewing network-layer concepts and transmission media next.</p><span class="tag">Network Layer</span><span class="tag">Transmission Media</span></div>',unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">🤖 Ask UniMate</div><div class="section-sub">Your schedule-aware AI is available directly from the dashboard.</div>',unsafe_allow_html=True)
+    ai_left, ai_right = st.columns([1.35,.65])
+    with ai_left:
+        st.markdown('<div class="ai"><h3>🤖 UniMate AI</h3><p style="font-size:12px">Ask about your classes, free periods, conflicts, study time, attendance or upcoming assessments.</p><span class="tag">Schedule-aware</span><span class="tag">Course-aware</span><span class="tag">Study planning</span></div>',unsafe_allow_html=True)
+        dash_q = st.text_input('Dashboard AI question', placeholder='مثال: وش عندي يوم الأحد؟', label_visibility='collapsed')
+        ask_dash = st.button('🤖 Ask UniMate', key='dash_ask_ai', type='primary', use_container_width=True)
+        quick1, quick2, quick3 = st.columns(3)
+        quick_question = None
+        with quick1:
+            if st.button('📅 My schedule', key='dash_q_schedule', use_container_width=True):
+                quick_question = 'أرسل لي جدولي الأسبوعي'
+        with quick2:
+            if st.button('⚠️ Check conflicts', key='dash_q_conflicts', use_container_width=True):
+                quick_question = 'هل عندي تعارض في جدولي؟'
+        with quick3:
+            if st.button('🧠 Study CNE 100', key='dash_q_study', use_container_width=True):
+                quick_question = 'متى أفضل وقت أذاكر CNE 100؟'
+
+        selected_question = quick_question if quick_question else (dash_q.strip() if ask_dash else '')
+        if selected_question:
+            if 'dashboard_ai_history' not in st.session_state:
+                st.session_state.dashboard_ai_history=[]
+            st.session_state.dashboard_ai_history.append(('user', selected_question))
+            with st.spinner('UniMate is checking your schedule...'):
+                try:
+                    dash_answer = ask_unimate_ai(selected_question)
+                except Exception:
+                    dash_answer = None
+                if not dash_answer:
+                    dash_answer = prototype_answer(selected_question)
+            st.session_state.dashboard_ai_history.append(('assistant', dash_answer))
             st.rerun()
-    with qb:
-        st.markdown('<div class="card"><h3>👤 Student Workspace</h3><p class="muted">Your student profile, degree progress, current courses, attendance and saved faculty connections in one place.</p><span class="tag">37 / 141 credits</span><span class="tag">5 courses</span><span class="tag">14 credit hours</span></div>',unsafe_allow_html=True)
-        if st.button('Open Student Workspace',key='dash_workspace',use_container_width=True):
+
+        if 'dashboard_ai_history' not in st.session_state:
+            st.session_state.dashboard_ai_history=[]
+        if st.session_state.dashboard_ai_history:
+            st.markdown('<div class="ai-chat">',unsafe_allow_html=True)
+            for role,message in st.session_state.dashboard_ai_history[-4:]:
+                if role=='user':
+                    st.markdown(f'<div class="ai-user"><b>You</b><br>{html.escape(message)}</div>',unsafe_allow_html=True)
+                else:
+                    safe_message=html.escape(message).replace('\n','<br>')
+                    st.markdown(f'<div class="ai-assistant"><div class="ai-title">🤖 UniMate</div>{safe_message}</div>',unsafe_allow_html=True)
+            st.markdown('</div>',unsafe_allow_html=True)
+    with ai_right:
+        st.markdown('<div class="card"><h3>🎯 Today at a glance</h3><p class="muted">Your detailed profile, degree progress, courses and faculty connections are available in Student Workspace.</p><div class="priority"><div class="picon">📌</div><div><b style="font-size:12px">Focus</b><div class="muted">Use Planner to organize your week around classes and study blocks.</div></div></div><div class="priority"><div class="picon">👤</div><div><b style="font-size:12px">Student Workspace</b><div class="muted">Open it when you need your complete academic information.</div></div></div></div>',unsafe_allow_html=True)
+        if st.button('👤 Open Student Workspace',key='dash_workspace',use_container_width=True):
             st.session_state.page='Student Workspace'; st.rerun()
 
 # -------------------- STUDENT WORKSPACE --------------------
