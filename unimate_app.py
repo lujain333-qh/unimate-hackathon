@@ -63,7 +63,7 @@ with st.sidebar:
     st.image("unimate_logo.png", use_container_width=True)
     st.markdown('<div class="profile"><div class="avatar">LA</div><b>Lana Alghamdi</b><br><small>Computer Network Engineering</small></div>',unsafe_allow_html=True)
     st.markdown('<div class="navlabel">Workspace</div>',unsafe_allow_html=True)
-    nav=[('🏠','Dashboard'),('📈','My Progress'),('🗓️','Planner'),('📚','Courses'),('👩‍🏫','Professors'),('📅','Calendar'),('🤖','AI Assistant'),('🧠','Practice Prep'),('🎯','Clubs')]
+    nav=[('🏠','Dashboard'),('👤','Student Workspace'),('📈','My Progress'),('🗓️','Planner'),('📚','Courses'),('👩‍🏫','Professors'),('📅','Calendar'),('🤖','AI Assistant'),('🧠','Practice Prep'),('🎯','Clubs')]
     for icon,name in nav:
         if st.button(f'{icon}  {name}',key='nav_'+name,use_container_width=True): st.session_state.page=name
     st.markdown('---');st.caption('Fall Semester 2026/2027');st.caption('AI Campus Companion · Prototype')
@@ -259,6 +259,67 @@ if page=='Dashboard':
     with x: st.markdown('<div class="ai"><h3>🤖 AI Insight · CNE 100</h3><p style="font-size:12px">Quiz 1 is <b>4.50 / 7.00 (64.3%)</b>. Focus your next review on network-layer concepts and transmission media.</p><span class="tag">Network Layer</span><span class="tag">Transmission Media</span></div>',unsafe_allow_html=True)
     with y: st.markdown('<div class="card"><h3>📅 Upcoming</h3><div class="event"><b>Sep 29 · Industrial Field Trip</b><small>09:30–15:00 · Sadara Chemical Company · Conflicts with SLM 101.</small></div><div class="event"><b>Sep 30 · Scheduled Course Quiz</b><small>Academic assessment.</small></div></div>',unsafe_allow_html=True)
 
+    st.markdown('<div class="section-title">Quick UniMate</div><div class="section-sub">Get help with your schedule directly from the home page.</div>',unsafe_allow_html=True)
+    qa,qb=st.columns([1.55,1])
+    with qa:
+        st.markdown('<div class="ai"><h3>🤖 Ask UniMate about your schedule</h3><p style="font-size:12px">Ask about today\'s classes, conflicts, free periods, or where to place a study session.</p></div>',unsafe_allow_html=True)
+        quick=st.text_input('Quick question',key='dashboard_ai_input',placeholder='مثال: وش عندي يوم الأحد؟',label_visibility='collapsed')
+        qc1,qc2,qc3=st.columns(3)
+        with qc1:
+            if st.button('📅 My schedule',key='dash_schedule',use_container_width=True):
+                st.session_state.ai_prefill='أرسل لي جدولي الأسبوعي'; st.session_state.page='AI Assistant'; st.rerun()
+        with qc2:
+            if st.button('⚠️ Conflicts',key='dash_conflicts',use_container_width=True):
+                st.session_state.ai_prefill='هل عندي تعارض في جدولي؟'; st.session_state.page='AI Assistant'; st.rerun()
+        with qc3:
+            if st.button('🧠 Study time',key='dash_study',use_container_width=True):
+                st.session_state.ai_prefill='متى أفضل وقت أذاكر CNE 100؟'; st.session_state.page='AI Assistant'; st.rerun()
+        if st.button('🤖 Open AI Assistant',key='dash_open_ai',type='primary',use_container_width=True):
+            st.session_state.ai_prefill=quick.strip() if quick.strip() else ''
+            st.session_state.page='AI Assistant'
+            st.rerun()
+    with qb:
+        st.markdown('<div class="card"><h3>👤 Student Workspace</h3><p class="muted">Your student profile, degree progress, current courses, attendance and saved faculty connections in one place.</p><span class="tag">37 / 141 credits</span><span class="tag">5 courses</span><span class="tag">14 credit hours</span></div>',unsafe_allow_html=True)
+        if st.button('Open Student Workspace',key='dash_workspace',use_container_width=True):
+            st.session_state.page='Student Workspace'; st.rerun()
+
+# -------------------- STUDENT WORKSPACE --------------------
+elif page=='Student Workspace':
+    hero('STUDENT WORKSPACE','Lana\'s Academic Workspace','Your personal university information, progress, courses, attendance and faculty connections in one place.')
+    a,b,c,d=st.columns(4)
+    with a: metric('👤','Student','Lana Alghamdi','Computer Network Engineering')
+    with b: metric('🎓','Degree Progress','26.2%','37 / 141 credits completed')
+    with c: metric('📚','Current Load','5 courses','14 credit hours')
+    with d: metric('🎯','Club','Active','Data Science Club')
+
+    st.markdown('<div class="section-title">Student Information</div>',unsafe_allow_html=True)
+    left,right=st.columns([1,1.35])
+    with left:
+        st.markdown('<div class="card"><h3>👤 Profile</h3><p><b>Name</b><br>Lana Alghamdi</p><p><b>Major</b><br>Bachelor of Science in Computer Network Engineering</p><p><b>Term</b><br>Fall Semester 2026/2027</p><p><b>Extracurricular</b><br>Data Science Club · Active Member</p></div>',unsafe_allow_html=True)
+    with right:
+        st.markdown('<div class="card"><h3>🎓 Degree Progress</h3><div class="donut"><div class="donutin"><b>26.2%</b><span>completed</span></div></div><p class="muted" style="text-align:center">37 completed credits · 104 remaining · 141 required</p><div class="progress-bg"><div class="progress" style="width:26.2%"></div></div></div>',unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">Current Courses</div>',unsafe_allow_html=True)
+    cols=st.columns(3)
+    for col,(code,c) in zip(cols,COURSES.items()):
+        with col:
+            st.markdown(f'<div class="card"><span class="code">{code}</span><h3 style="margin-top:5px">{c["name"]}</h3><p class="muted">🕒 {c["time"]}</p><p class="muted">📍 {c["room"]}</p><p class="muted">👩‍🏫 {c["prof"]}</p><span class="tag">{c["absence"]} absence</span><span class="tag">{c["pct"]:.2f}%</span></div>',unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">Attendance & Academic Record</div>',unsafe_allow_html=True)
+    left,right=st.columns(2)
+    with left:
+        rows=''.join(f'<tr><td>{code}</td><td>{c["absence"]}</td><td>{c["pct"]:.2f}%</td><td><span class="green">Safe</span></td></tr>' for code,c in COURSES.items())
+        st.markdown(f'<div class="card"><h3>Attendance</h3><p class="muted">DN threshold: 20% absence rate</p><table><tr><th>Course</th><th>Abs.</th><th>Rate</th><th>Status</th></tr>{rows}</table></div>',unsafe_allow_html=True)
+    with right:
+        st.markdown('<div class="card"><h3>🧪 Current Assessment</h3><p><b>CNE 100 · Quiz 1</b></p><div style="font-size:30px;font-weight:800;color:#071A3D">4.50 / 7.00</div><p class="muted">64.3% · Quizzes are 20% of the course grade.</p><span class="tag">Network Layer</span><span class="tag">Transmission Media</span></div>',unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">Bookmarked Faculty & Degree Plan</div>',unsafe_allow_html=True)
+    p,q=st.columns(2)
+    with p:
+        st.markdown('<div class="card"><h3>★ Mrs. Lubna Tahlawi</h3><p class="muted">Computer Engineering · D-2605</p><p>Upcoming alignment: <b>CIS 321 — Operating Systems</b></p><span class="tag">Bookmarked</span><span class="tag">CIS 321</span></div>',unsafe_allow_html=True)
+    with q:
+        st.markdown('<div class="card"><h3>★ Dr. Ahmad Mugbil</h3><p class="muted">Mathematics & Natural Sciences · C-2604</p><p>Upcoming alignment: <b>MTH 301 — Linear Algebra</b> and <b>MTH 204 — Calculus II</b></p><span class="tag">Bookmarked</span><span class="tag">Prerequisites</span></div>',unsafe_allow_html=True)
+
 # -------------------- MY PROGRESS --------------------
 elif page=='My Progress':
     hero('STUDENT PROGRESS','My Progress','A clear view of degree completion and current academic indicators.')
@@ -364,8 +425,11 @@ elif page=='AI Assistant':
     if 'ai_input' not in st.session_state:
         st.session_state.ai_input=''
 
+    # Apply a question coming from Dashboard before creating the widget.
+    if 'ai_prefill' in st.session_state:
+        st.session_state.ai_input=st.session_state.pop('ai_prefill')
+
     # Clear the previous question BEFORE creating the text widget.
-    # Streamlit does not allow changing a widget's keyed session state after creation.
     if st.session_state.pop('clear_ai_input', False):
         st.session_state.ai_input=''
 
