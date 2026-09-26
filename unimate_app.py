@@ -1,4 +1,3 @@
-
 import streamlit as st
 import calendar
 import html
@@ -182,6 +181,16 @@ def prototype_answer(question):
     q=question.strip().lower()
 
     planning_intent=any(x in q for x in ['study plan','study','study time','مذاكرة','ذاكر','أذاكر','خطة مذاكرة','رتب لي','ساعدني','help me'])
+    if any(x in q for x in ['next term','next semester','what should i register','what should i take','register next','الترم الجاي','الترم القادم','الفصل الجاي','الفصل القادم','وش اسجل','وش أسجل','وش اخذ','وش آخذ','مواد الترم الجاي','مواد الفصل الجاي','اسجل مواد','أسجل مواد']):
+        return ('حسب خطة BCNE المرفقة والمواد التي حددتيها باللون الأصفر، المواد المقترحة للترم الجاي هي:\n\n'
+                '• **MTH 204 — Calculus II** · 3 credits · Prerequisite: MTH 104\n'
+                '• **CIS 221 — Introduction to Database Systems** · 3 credits · Prerequisite: CIS 104\n'
+                '• **CNE 221 — Digital Logic and Design** · 3 credits · Prerequisite: MTH 106\n\n'
+                'إجمالي الخطة المقترحة: **9 credit hours**. هذه قائمة الخطة المقترحة في الملف وليست تسجيلًا رسميًا.')
+
+    if any(x in q for x in ['prerequisite','prerequisites','متطلب','متطلبات سابقة']) and any(x in q for x in ['next','term','semester','الترم','الفصل','المواد']):
+        return 'متطلبات المواد المقترحة: **MTH 204 ← MTH 104**، **CIS 221 ← CIS 104**، و**CNE 221 ← MTH 106**.'
+
     if any(x in q for x in ['send my schedule','show my schedule','my schedule','weekly schedule','schedule','جدولي','الجدول','جدولك','جدولي الجامعي']) and not planning_intent:
         return schedule_text()
     if any(x in q for x in ['sunday','الأحد']):
@@ -337,6 +346,7 @@ elif page=='Student Workspace':
         st.markdown('<div class="card"><h3>★ Mrs. Lubna Tahlawi</h3><p class="muted">Computer Engineering · D-2605</p><p>Upcoming alignment: <b>CIS 321 — Operating Systems</b></p><span class="tag">Bookmarked</span><span class="tag">CIS 321</span></div>',unsafe_allow_html=True)
     with q:
         st.markdown('<div class="card"><h3>★ Dr. Ahmad Mugbil</h3><p class="muted">Mathematics & Natural Sciences · C-2604</p><p>Upcoming alignment: <b>MTH 301 — Linear Algebra</b> and <b>MTH 204 — Calculus II</b></p><span class="tag">Bookmarked</span><span class="tag">Prerequisites</span></div>',unsafe_allow_html=True)
+
 
 # -------------------- MY PROGRESS --------------------
 elif page=='My Progress':
