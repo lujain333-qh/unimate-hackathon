@@ -1,4 +1,4 @@
-import streamlit as st
+
 import calendar
 
 try:
@@ -37,6 +37,8 @@ st.markdown('''<style>
 :root{--navy:#071A3D;--blue:#2F6FED;--pale:#EAF2FF;--bg:#F6F8FC;--text:#15213B;--muted:#6D7890;--line:#E4EAF3;--green:#20A46B}
 html,body,[class*="css"]{font-family:Inter,sans-serif}.stApp{background:var(--bg);color:var(--text)}#MainMenu,footer{visibility:hidden}.block-container{padding:1.5rem 2.2rem 2.5rem;max-width:1500px}
 section[data-testid="stSidebar"]{background:linear-gradient(180deg,#071A3D,#0A2450)}section[data-testid="stSidebar"]>div{padding:.9rem .8rem}section[data-testid="stSidebar"] *{color:#EAF1FF}
+section[data-testid="stSidebar"] [data-testid="stImage"]{margin:0 auto 12px;padding:4px 8px;background:#FFFFFF;border-radius:14px}
+section[data-testid="stSidebar"] [data-testid="stImage"] img{object-fit:contain;max-height:92px}
 .logo{font-size:26px;font-weight:800;padding:8px 10px 18px}.logo span{color:#72A1FF}.profile{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1);padding:13px;border-radius:16px;margin-bottom:16px}.avatar{width:42px;height:42px;border-radius:50%;background:#DCE9FF;color:var(--navy);display:flex;align-items:center;justify-content:center;font-weight:800;float:left;margin-right:10px}.profile small{color:#AFC1E5}.navlabel{color:#8FA7D0;font-size:10px;text-transform:uppercase;letter-spacing:1.2px;margin:12px 9px 7px}
 div.stButton>button{border-radius:11px;border:1px solid var(--line);font-weight:600;background:white;color:var(--text);min-height:40px}
 section[data-testid="stSidebar"] div.stButton>button{background:#FFFFFF !important;color:#071A3D !important;text-align:left;padding-left:15px}
@@ -58,7 +60,7 @@ div[data-testid="stTextInput"] input::placeholder{color:#71809A !important}
 # -------------------- NAV --------------------
 if 'page' not in st.session_state: st.session_state.page='Dashboard'
 with st.sidebar:
-    st.markdown('<div class="logo">Uni<span>Mate</span></div>',unsafe_allow_html=True)
+    st.image("unimate_logo.png", use_container_width=True)
     st.markdown('<div class="profile"><div class="avatar">LA</div><b>Lana Alghamdi</b><br><small>Computer Network Engineering</small></div>',unsafe_allow_html=True)
     st.markdown('<div class="navlabel">Workspace</div>',unsafe_allow_html=True)
     nav=[('🏠','Dashboard'),('📈','My Progress'),('🗓️','Planner'),('📚','Courses'),('👩‍🏫','Professors'),('📅','Calendar'),('🤖','AI Assistant'),('🧠','Practice Prep'),('🎯','Clubs')]
@@ -362,13 +364,17 @@ elif page=='AI Assistant':
     if 'ai_input' not in st.session_state:
         st.session_state.ai_input=''
 
+    # Clear the previous question BEFORE creating the text widget.
+    # Streamlit does not allow changing a widget's keyed session state after creation.
+    if st.session_state.pop('clear_ai_input', False):
+        st.session_state.ai_input=''
+
     typed=st.text_input('Your question',key='ai_input',placeholder='مثال: كيف أرتب مذاكرتي بين محاضرات الأحد والأربعاء؟')
     ask=st.button('🤖 Ask UniMate',type='primary',use_container_width=True)
     question=typed
 
     if ask and question.strip():
         question=question.strip()
-        st.session_state.ai_input=''
         st.session_state.ai_history.append(('user',question))
         with st.spinner('UniMate is checking your schedule...'):
             try:
@@ -378,6 +384,10 @@ elif page=='AI Assistant':
             if not answer:
                 answer=prototype_answer(question)
         st.session_state.ai_history.append(('assistant',answer))
+        # Request a clean input on the next rerun; the state is changed only
+        # before the text widget is instantiated.
+        st.session_state.clear_ai_input=True
+        st.rerun()
 
     if st.session_state.ai_history:
         st.markdown('<div class="ai-chat">',unsafe_allow_html=True)
